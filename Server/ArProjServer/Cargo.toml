@@ -1,0 +1,6 @@
+[package]
+name = "ArProjServer"
+version = "0.1.0"
+authors = ["Tucker Morgan <tucker.bull.morgan@gmail.com>"]
+
+[dependencies]
