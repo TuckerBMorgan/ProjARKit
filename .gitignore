@@ -68,3 +68,5 @@ fastlane/screenshots
 fastlane/test_output
 
 *.xcuserstate
+
+Client/AR Chess/AR Chess.xcodeproj/project.xcworkspace/xcuserdata/Alex.xcuserdatad/UserInterfaceState.xcuserstate
