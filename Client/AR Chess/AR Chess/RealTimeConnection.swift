@@ -10,7 +10,7 @@ import UIKit
 import Socket
 
 class RealTimeConnection: NSObject {
-    var socket:Socket?
+    private var socket:Socket?
     
     override init() {
         do{
