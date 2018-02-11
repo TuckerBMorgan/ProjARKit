@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		890011659F7B68C140426C50 /* Pods_AR_Chess.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F15253FA0D52EB84F28711A2 /* Pods_AR_Chess.framework */; };
 		FA110EF8202F7C870088AC0B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA110EF7202F7C870088AC0B /* AppDelegate.swift */; };
 		FA110EFA202F7C870088AC0B /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = FA110EF9202F7C870088AC0B /* art.scnassets */; };
 		FA110EFC202F7C870088AC0B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA110EFB202F7C870088AC0B /* ViewController.swift */; };
@@ -35,6 +36,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA29C731AF15C7B5BD0A9E37 /* Pods-AR Chess.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AR Chess.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AR Chess/Pods-AR Chess.debug.xcconfig"; sourceTree = "<group>"; };
+		D82142BD34839A60970F2954 /* Pods-AR Chess.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AR Chess.release.xcconfig"; path = "Pods/Target Support Files/Pods-AR Chess/Pods-AR Chess.release.xcconfig"; sourceTree = "<group>"; };
+		F15253FA0D52EB84F28711A2 /* Pods_AR_Chess.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AR_Chess.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA110EF4202F7C870088AC0B /* AR Chess.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AR Chess.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA110EF7202F7C870088AC0B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FA110EF9202F7C870088AC0B /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -56,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				890011659F7B68C140426C50 /* Pods_AR_Chess.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +81,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		74379E191E01DFF5AAECDFEE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F15253FA0D52EB84F28711A2 /* Pods_AR_Chess.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AC1C7A2590AAA812409B0E20 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				CA29C731AF15C7B5BD0A9E37 /* Pods-AR Chess.debug.xcconfig */,
+				D82142BD34839A60970F2954 /* Pods-AR Chess.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		FA110EEB202F7C870088AC0B = {
 			isa = PBXGroup;
 			children = (
@@ -83,6 +105,8 @@
 				FA110F0D202F7C870088AC0B /* AR ChessTests */,
 				FA110F18202F7C870088AC0B /* AR ChessUITests */,
 				FA110EF5202F7C870088AC0B /* Products */,
+				AC1C7A2590AAA812409B0E20 /* Pods */,
+				74379E191E01DFF5AAECDFEE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -135,9 +159,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FA110F1E202F7C870088AC0B /* Build configuration list for PBXNativeTarget "AR Chess" */;
 			buildPhases = (
+				D1C7B2B39A4D1A9C271A1A93 /* [CP] Check Pods Manifest.lock */,
 				FA110EF0202F7C870088AC0B /* Sources */,
 				FA110EF1202F7C870088AC0B /* Frameworks */,
 				FA110EF2202F7C870088AC0B /* Resources */,
+				CD1722D1F0CB37015B81FD03 /* [CP] Embed Pods Frameworks */,
+				25DB902FEFE855AC96F41F0F /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -257,6 +284,60 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		25DB902FEFE855AC96F41F0F /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AR Chess/Pods-AR Chess-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CD1722D1F0CB37015B81FD03 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-AR Chess/Pods-AR Chess-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/BlueSocket/Socket.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Socket.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AR Chess/Pods-AR Chess-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D1C7B2B39A4D1A9C271A1A93 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AR Chess-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		FA110EF0202F7C870088AC0B /* Sources */ = {
@@ -428,6 +509,7 @@
 		};
 		FA110F1F202F7C870088AC0B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CA29C731AF15C7B5BD0A9E37 /* Pods-AR Chess.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -443,6 +525,7 @@
 		};
 		FA110F20202F7C870088AC0B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D82142BD34839A60970F2954 /* Pods-AR Chess.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;

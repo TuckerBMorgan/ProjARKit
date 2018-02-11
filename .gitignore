@@ -70,3 +70,6 @@ fastlane/test_output
 *.xcuserstate
 
 Client/AR Chess/AR Chess.xcodeproj/project.xcworkspace/xcuserdata/Alex.xcuserdatad/UserInterfaceState.xcuserstate
+Client/AR Chess/Pods
+
+Client/AR Chess/Podfile.lock
