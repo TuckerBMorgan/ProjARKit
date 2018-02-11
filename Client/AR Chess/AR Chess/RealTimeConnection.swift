@@ -8,23 +8,35 @@
 
 import UIKit
 import Socket
+import SwiftyJSON
 
 class RealTimeConnection: NSObject {
     private var socket:Socket?
     
     override init() {
+        super.init()
         do{
             self.socket = try Socket.create()
             try self.socket!.connect(to: "129.21.92.166", port: 4243, timeout: 0)
             print("Connected")
             while(true){
                 let result = try self.socket!.readString()
-                print("\(String(describing: result))")
+                if result == nil{
+                    continue
+                }
+                let json = JSON.init(parseJSON: result!)
+                self.parseSocketData(data: json)
+                
+                
             }
         }
         catch{
             
         }
+    }
+    
+    private func parseSocketData(data:JSON){
+        
     }
     
     
