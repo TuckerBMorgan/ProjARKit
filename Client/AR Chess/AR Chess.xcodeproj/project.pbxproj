@@ -16,6 +16,7 @@
 		FA110F04202F7C870088AC0B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA110F02202F7C870088AC0B /* LaunchScreen.storyboard */; };
 		FA110F0F202F7C870088AC0B /* AR_ChessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA110F0E202F7C870088AC0B /* AR_ChessTests.swift */; };
 		FA110F1A202F7C870088AC0B /* AR_ChessUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA110F19202F7C870088AC0B /* AR_ChessUITests.swift */; };
+		FA2055E92030FACC00A64C99 /* RealTimeConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2055E82030FACC00A64C99 /* RealTimeConnection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		FA110F15202F7C870088AC0B /* AR ChessUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AR ChessUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA110F19202F7C870088AC0B /* AR_ChessUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AR_ChessUITests.swift; sourceTree = "<group>"; };
 		FA110F1B202F7C870088AC0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FA2055E82030FACC00A64C99 /* RealTimeConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealTimeConnection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +132,7 @@
 				FA110F00202F7C870088AC0B /* Assets.xcassets */,
 				FA110F02202F7C870088AC0B /* LaunchScreen.storyboard */,
 				FA110F05202F7C870088AC0B /* Info.plist */,
+				FA2055E82030FACC00A64C99 /* RealTimeConnection.swift */,
 			);
 			path = "AR Chess";
 			sourceTree = "<group>";
@@ -346,6 +349,7 @@
 			files = (
 				FA110EFC202F7C870088AC0B /* ViewController.swift in Sources */,
 				FA110EF8202F7C870088AC0B /* AppDelegate.swift in Sources */,
+				FA2055E92030FACC00A64C99 /* RealTimeConnection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
