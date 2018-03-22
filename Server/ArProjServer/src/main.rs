@@ -64,11 +64,38 @@ struct Board {
 impl Board {
     fn move_piece(&mut self, from_row: usize, from_col: usize, to_row: usize, to_col: usize) {
         let piece = self.grid[from_row][from_col];
-        // validate move fn (piece, coords)-> if true
-        piece.unwrap().has_moved = true;
-        self.grid[to_row][to_col] = piece; 
-        self.grid[from_row][from_col] = None
-    } 
+        if !piece.is_none() {
+            if self.valid_move(&piece.unwrap(), to_row, to_col) {
+                piece.unwrap().has_moved = true;
+                self.grid[to_row][to_col] = piece; 
+                self.grid[from_row][from_col] = None
+            } else {
+                println!("Invalid move");                
+            }
+        }
+   } 
+
+    fn valid_move(&self, piece: &Piece, row: usize, col: usize) -> bool {
+        match piece.piece_type {
+            PieceType::King => self.valid_move_king(piece, row, col),
+            _ => true
+        }
+    }
+
+    fn valid_move_king(&self, piece: &Piece, row: usize, col: usize) -> bool {
+        if (piece.row as i32 - row as i32).abs() > 1 || (piece.col as i32 - col as i32).abs() > 1 {
+            return false;
+        }
+
+        let target_piece = self.grid[row][col];
+        if !target_piece.is_none() {
+            if piece.color == target_piece.unwrap().color {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 impl Default for Board {
@@ -148,14 +175,25 @@ impl fmt::Display for Board {
             }
             board_rep.push('\n');
         } 
+        board_rep.pop();
         write!(f, "{}", board_rep)
     }
 }
 
+
 fn main() {
     let mut b = Board{..Default::default()};
     println!("{}", b);
+    println!("\nTrying to move pawn at (6,0) to (5,0)");
     b.move_piece(6, 0, 5, 0);
-    println!("-----------------");
-    println!("{}", b);
+    println!("\n{}", b);
+    println!("\nTrying to move king at (7,4) to (6,4)");
+    b.move_piece(7, 4, 6, 4);
+    println!("\n{}", b);
+    println!("\nTrying to move pawn at (6,4) to (5,4)");
+    b.move_piece(6, 4, 5, 4);
+    println!("\n{}", b);
+    println!("\nTrying to move king at (7,4) to (6,4)");
+    b.move_piece(7, 4, 6, 4);
+    println!("\n{}", b);
 }
