@@ -76,14 +76,7 @@ impl Board {
    } 
 
     fn valid_move(&self, piece: &Piece, row: usize, col: usize) -> bool {
-        match piece.piece_type {
-            PieceType::King => self.valid_move_king(piece, row, col),
-            _ => true
-        }
-    }
-
-    fn valid_move_king(&self, piece: &Piece, row: usize, col: usize) -> bool {
-        if (piece.row as i32 - row as i32).abs() > 1 || (piece.col as i32 - col as i32).abs() > 1 {
+        if row > self.rows - 1 || col > self.cols - 1 {
             return false;
         }
 
@@ -92,10 +85,22 @@ impl Board {
             if piece.color == target_piece.unwrap().color {
                 return false;
             }
+
+            if piece.row == row && piece.col == col {
+                return false;
+            }
         }
 
         return true;
-    }
+   }
+
+   fn possible_bishop_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+       let mut moves = [[0; 8]; 8];
+
+       
+
+       return moves;
+   }
 }
 
 impl Default for Board {
@@ -189,6 +194,9 @@ fn main() {
     println!("\n{}", b);
     println!("\nTrying to move king at (7,4) to (6,4)");
     b.move_piece(7, 4, 6, 4);
+    println!("\n{}", b);
+    println!("\nTrying to move king at (7,4) to (8,4)");
+    b.move_piece(7, 4, 8, 4);
     println!("\n{}", b);
     println!("\nTrying to move pawn at (6,4) to (5,4)");
     b.move_piece(6, 4, 5, 4);
