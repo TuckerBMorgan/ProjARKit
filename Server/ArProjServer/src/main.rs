@@ -66,8 +66,11 @@ impl Board {
         let piece = self.grid[from_row][from_col];
         if !piece.is_none() {
             if self.valid_move(&piece.unwrap(), to_row, to_col) {
-                piece.unwrap().has_moved = true;
-                self.grid[to_row][to_col] = piece; 
+                let mut piece = piece.unwrap();
+                piece.has_moved = true;
+                piece.row = to_row;
+                piece.col = to_col;
+                self.grid[to_row][to_col] = Some(piece); 
                 self.grid[from_row][from_col] = None
             } else {
                 println!("Invalid move");                
@@ -94,12 +97,95 @@ impl Board {
         return true;
    }
 
+   fn print_moves(&self, moves: &[[u8; 8]; 8]) {
+       let mut output = String::new();
+
+       for row in 0..8 {
+           for col in 0..8 {
+               output.push_str(&format!("{} ", moves[row][col]));
+           }
+           output.push('\n');
+       }
+       output.pop();
+
+       println!("{}", output);
+   }
+
    fn possible_bishop_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
-       let mut moves = [[0; 8]; 8];
+        let mut moves = [[0; 8]; 8];
 
-       
+        //down positive diagonal
+        let mut row = piece.row + 1;
+        let mut col = piece.col + 1;
 
-       return moves;
+        while self.valid_move(piece, row, col) {
+            moves[row][col] = 1;
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            row += 1;
+            col += 1;
+        }
+
+        //up positive diagonal
+        row = piece.row + 1;
+        col = piece.col - 1;
+
+        while self.valid_move(piece, row, col) {
+            moves[row][col] = 1;
+            
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            if col == 0 {
+                break;
+            }
+            row += 1;
+            col -= 1;
+        }
+        
+        //up negative diagonal
+        row = piece.row - 1;
+        col = piece.col - 1;
+
+        while self.valid_move(piece, row, col) {
+            moves[row][col] = 1;
+            
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            if row == 0 || col == 0 {
+                break;
+            }
+
+            row -= 1;
+            col -= 1;
+        }
+        
+        //down negative diagonal
+        row = piece.row - 1;
+        col = piece.col + 1;
+
+        while self.valid_move(piece, row, col) {
+            moves[row][col] = 1;
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            if row == 0 {
+                break;
+            }
+
+            row -= 1;
+            col += 1;
+        }
+
+        return moves;
    }
 }
 
@@ -185,7 +271,6 @@ impl fmt::Display for Board {
     }
 }
 
-
 fn main() {
     let mut b = Board{..Default::default()};
     println!("{}", b);
@@ -204,4 +289,16 @@ fn main() {
     println!("\nTrying to move king at (7,4) to (6,4)");
     b.move_piece(7, 4, 6, 4);
     println!("\n{}", b);
+    println!("\nTrying to move king at (6,4) to (7,4)");
+    b.move_piece(6, 4, 7, 4);
+    println!("\n{}", b);
+    println!("\nTrying to move pawn at (6,6) to (5,6)");
+    b.move_piece(6, 6, 5, 6);
+    println!("\n{}", b);
+    println!("\nGenerating all possible moves for bishop at (7,5):");
+    b.print_moves(&b.possible_bishop_moves(&b.grid[7][5].unwrap()));
+    println!("\nTrying to move bishop at (7,5) to (4, 2)");
+    b.move_piece(7, 5, 4, 2);
+    println!("\n{}", b);
+    b.print_moves(&b.possible_bishop_moves(&b.grid[4][2].unwrap()));
 }
