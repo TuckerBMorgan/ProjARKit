@@ -187,6 +187,88 @@ impl Board {
 
         return moves;
    }
+
+   fn possible_knight_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+        let mut moves = [[0; 8]; 8];
+
+        // top top left
+        if piece.row >= 2 && piece.col >= 1{
+            let row = piece.row - 2;
+            let col = piece.col - 1;
+
+            if self.valid_move(piece, row, col) {
+                moves[row][col] = 1
+            }
+        }
+
+        // top top right
+        if piece.row >= 2 {
+            let row = piece.row - 2;
+            let col = piece.col + 1;
+            
+            if self.valid_move(piece, row, col) {
+                moves[row][col] = 1
+            }
+        }
+
+        // top right
+        if piece.row >= 1 {
+            let row = piece.row - 1;
+            let col = piece.col + 2;
+            
+            if self.valid_move(piece, row, col) {
+                moves[row][col] = 1
+            }
+        }
+
+        // top left
+        if piece.row >= 1 && piece.col >= 2 {
+            let row = piece.row - 1;
+            let col = piece.col - 2;
+
+            if self.valid_move(piece, row, col) {
+                moves[row][col] = 1
+            }
+        }
+
+        // bot left
+        if piece.col >= 2 {
+            let row = piece.row + 1;
+            let col = piece.col - 2;
+
+            if self.valid_move(piece, row, col) {
+                moves[row][col] = 1
+            }
+        }
+
+        // bot right
+        let row = piece.row + 1;
+        let col = piece.col + 2;
+
+        if self.valid_move(piece, row, col) {
+            moves[row][col] = 1
+        }
+
+        // bot bot right
+        let row = piece.row + 2;
+        let col = piece.col + 1;
+
+        if self.valid_move(piece, row, col) {
+            moves[row][col] = 1
+        }
+
+        // bot bot left
+        if piece.col >= 1 {
+            let row = piece.row + 2;
+            let col = piece.col - 1;
+
+            if self.valid_move(piece, row, col) {
+                moves[row][col] = 1
+            }
+        }
+
+        return moves;
+   }
 }
 
 impl Default for Board {
@@ -297,8 +379,17 @@ fn main() {
     println!("\n{}", b);
     println!("\nGenerating all possible moves for bishop at (7,5):");
     b.print_moves(&b.possible_bishop_moves(&b.grid[7][5].unwrap()));
-    println!("\nTrying to move bishop at (7,5) to (4, 2)");
+    println!("\nTrying to move bishop at (7,5) to (4,2)");
     b.move_piece(7, 5, 4, 2);
     println!("\n{}", b);
+    println!("\nGenerating all possible moves for bishop at (4,2):");
     b.print_moves(&b.possible_bishop_moves(&b.grid[4][2].unwrap()));
+    println!("\n{}", b);
+    println!("\nGenerating all possible moves for knight at (7,6)");
+    b.print_moves(&b.possible_knight_moves(&b.grid[7][6].unwrap()));
+    println!("\nTrying to move knight at (7,6) to (5,5)");
+    b.move_piece(7, 6, 5, 5);
+    println!("\n{}", b);
+    println!("\nGenerating all possible moves for knight at (5,5)");
+    b.print_moves(&b.possible_knight_moves(&b.grid[5][5].unwrap()));
 }
