@@ -110,6 +110,14 @@ impl Board {
 
        println!("{}", output);
    }
+   
+   fn possible_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+       match piece.piece_type {
+           PieceType::LKnight | PieceType::RKnight => self.possible_knight_moves(piece),
+           PieceType::LBishop | PieceType::RBishop => self.possible_bishop_moves(piece),
+           _ => [[0; 8]; 8]
+       }
+   }
 
    fn possible_bishop_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
         let mut moves = [[0; 8]; 8];
@@ -355,41 +363,89 @@ impl fmt::Display for Board {
 
 fn main() {
     let mut b = Board{..Default::default()};
+    // println!("{}", b);
+    // println!("\nTrying to move pawn at (6,0) to (5,0)");
+    // b.move_piece(6, 0, 5, 0);
+    // println!("\n{}", b);
+    // println!("\nTrying to move king at (7,4) to (6,4)");
+    // b.move_piece(7, 4, 6, 4);
+    // println!("\n{}", b);
+    // println!("\nTrying to move king at (7,4) to (8,4)");
+    // b.move_piece(7, 4, 8, 4);
+    // println!("\n{}", b);
+    // println!("\nTrying to move pawn at (6,4) to (5,4)");
+    // b.move_piece(6, 4, 5, 4);
+    // println!("\n{}", b);
+    // println!("\nTrying to move king at (7,4) to (6,4)");
+    // b.move_piece(7, 4, 6, 4);
+    // println!("\n{}", b);
+    // println!("\nTrying to move king at (6,4) to (7,4)");
+    // b.move_piece(6, 4, 7, 4);
+    // println!("\n{}", b);
+    // println!("\nTrying to move pawn at (6,6) to (5,6)");
+    // b.move_piece(6, 6, 5, 6);
+    // println!("\n{}", b);
+    // println!("\nGenerating all possible moves for bishop at (7,5):");
+    // b.print_moves(&b.possible_bishop_moves(&b.grid[7][5].unwrap()));
+    // println!("\nTrying to move bishop at (7,5) to (4,2)");
+    // b.move_piece(7, 5, 4, 2);
+    // println!("\n{}", b);
+    // println!("\nGenerating all possible moves for bishop at (4,2):");
+    // b.print_moves(&b.possible_bishop_moves(&b.grid[4][2].unwrap()));
+    // println!("\n{}", b);
+    // println!("\nGenerating all possible moves for knight at (7,6)");
+    // b.print_moves(&b.possible_knight_moves(&b.grid[7][6].unwrap()));
+    // println!("\nTrying to move knight at (7,6) to (5,5)");
+    // b.move_piece(7, 6, 5, 5);
+    // println!("\n{}", b);
+    // println!("\nGenerating all possible moves for knight at (5,5)");
+    // b.print_moves(&b.possible_knight_moves(&b.grid[5][5].unwrap()));
+
     println!("{}", b);
-    println!("\nTrying to move pawn at (6,0) to (5,0)");
-    b.move_piece(6, 0, 5, 0);
-    println!("\n{}", b);
-    println!("\nTrying to move king at (7,4) to (6,4)");
-    b.move_piece(7, 4, 6, 4);
-    println!("\n{}", b);
-    println!("\nTrying to move king at (7,4) to (8,4)");
-    b.move_piece(7, 4, 8, 4);
-    println!("\n{}", b);
-    println!("\nTrying to move pawn at (6,4) to (5,4)");
-    b.move_piece(6, 4, 5, 4);
-    println!("\n{}", b);
-    println!("\nTrying to move king at (7,4) to (6,4)");
-    b.move_piece(7, 4, 6, 4);
-    println!("\n{}", b);
-    println!("\nTrying to move king at (6,4) to (7,4)");
-    b.move_piece(6, 4, 7, 4);
-    println!("\n{}", b);
-    println!("\nTrying to move pawn at (6,6) to (5,6)");
-    b.move_piece(6, 6, 5, 6);
-    println!("\n{}", b);
-    println!("\nGenerating all possible moves for bishop at (7,5):");
-    b.print_moves(&b.possible_bishop_moves(&b.grid[7][5].unwrap()));
-    println!("\nTrying to move bishop at (7,5) to (4,2)");
-    b.move_piece(7, 5, 4, 2);
-    println!("\n{}", b);
-    println!("\nGenerating all possible moves for bishop at (4,2):");
-    b.print_moves(&b.possible_bishop_moves(&b.grid[4][2].unwrap()));
-    println!("\n{}", b);
-    println!("\nGenerating all possible moves for knight at (7,6)");
-    b.print_moves(&b.possible_knight_moves(&b.grid[7][6].unwrap()));
-    println!("\nTrying to move knight at (7,6) to (5,5)");
-    b.move_piece(7, 6, 5, 5);
-    println!("\n{}", b);
-    println!("\nGenerating all possible moves for knight at (5,5)");
-    b.print_moves(&b.possible_knight_moves(&b.grid[5][5].unwrap()));
+
+    // loop for input
+    use std::io::{stdin, stdout};
+    let mut s = String::new();
+    println!("m -> Move\ns -> Show Moves\np -> Print board\ne -> exit");
+    loop {
+        s.clear();
+        stdin().read_line(&mut s).expect("wtf");
+        let input = s.trim_right();
+        match input.chars().next().unwrap() {
+            'm' => {
+                println!("Enter values: (format => row1 col1 row2 col2)");
+                let mut x = String::new();
+                stdin().read_line(&mut x).expect("wtf");
+
+                let new_input = x.trim_right();
+                let vals: Vec<&str> = new_input.split(" ").collect();
+
+                let row1 = vals[0].parse::<usize>().unwrap();
+                let col1 = vals[1].parse::<usize>().unwrap();
+                let row2 = vals[2].parse::<usize>().unwrap();
+                let col2 = vals[3].parse::<usize>().unwrap();
+
+                println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
+                b.move_piece(row1, col1, row2, col2);
+            },
+            's' => { 
+                println!("Enter values: (format => row col)");
+                let mut x = String::new();
+                stdin().read_line(&mut x).expect("wtf");
+
+                let new_input = x.trim_right();
+                let vals: Vec<&str> = new_input.split(" ").collect();
+
+                let row = vals[0].parse::<usize>().unwrap();
+                let col = vals[1].parse::<usize>().unwrap();
+
+                println!("Generating possible moves for ({}, {})", row, col);
+
+                b.print_moves(&b.possible_moves(&b.grid[row][col].unwrap()));
+            },
+            'p' => { println!("{}", b); continue },
+            'e' => break,
+            _ => { println!("m -> Move\ns -> Show Moves\np -> Print board\ne -> exit"); continue }
+        } 
+    }
 }
