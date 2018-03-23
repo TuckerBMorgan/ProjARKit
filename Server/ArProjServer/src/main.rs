@@ -65,18 +65,23 @@ impl Board {
     fn move_piece(&mut self, from_row: usize, from_col: usize, to_row: usize, to_col: usize) {
         let piece = self.grid[from_row][from_col];
         if !piece.is_none() {
-            if self.valid_move(&piece.unwrap(), to_row, to_col) {
-                let mut piece = piece.unwrap();
+            let mut piece = piece.unwrap();
+            let moves = self.possible_moves(&piece);
+
+            // if the chosen move is in the generated possible moves
+            if moves[to_row][to_col] == 1 {
                 piece.has_moved = true;
                 piece.row = to_row;
                 piece.col = to_col;
                 self.grid[to_row][to_col] = Some(piece); 
                 self.grid[from_row][from_col] = None
             } else {
-                println!("Invalid move");                
+                println!("[Error] Attempt to move piece to invalid square");
             }
+        } else {
+            println!("[Error] Attempt to move an empty piece");                
         }
-   } 
+    } 
 
     fn valid_move(&self, piece: &Piece, row: usize, col: usize) -> bool {
         if row > self.rows - 1 || col > self.cols - 1 {
@@ -95,9 +100,9 @@ impl Board {
         }
 
         return true;
-   }
+    }
 
-   fn print_moves(&self, moves: &[[u8; 8]; 8]) {
+    fn print_moves(&self, moves: &[[u8; 8]; 8]) {
        let mut output = String::new();
 
        for row in 0..8 {
@@ -109,94 +114,103 @@ impl Board {
        output.pop();
 
        println!("{}", output);
-   }
+    }
    
-   fn possible_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
-       match piece.piece_type {
-           PieceType::LKnight | PieceType::RKnight => self.possible_knight_moves(piece),
-           PieceType::LBishop | PieceType::RBishop => self.possible_bishop_moves(piece),
-           _ => [[0; 8]; 8]
-       }
-   }
-
-   fn possible_bishop_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
-        let mut moves = [[0; 8]; 8];
-
-        //down positive diagonal
-        let mut row = piece.row + 1;
-        let mut col = piece.col + 1;
-
-        while self.valid_move(piece, row, col) {
-            moves[row][col] = 1;
-
-            if !self.grid[row][col].is_none() {
-                break;
-            }
-
-            row += 1;
-            col += 1;
+    fn possible_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+        match piece.piece_type {
+            PieceType::LKnight | PieceType::RKnight => self.possible_knight_moves(piece),
+            PieceType::LBishop | PieceType::RBishop => self.possible_bishop_moves(piece),
+            PieceType::Queen => self.possible_queen_moves(piece),
+            _ => [[0; 8]; 8]
         }
+    }
 
-        //up positive diagonal
-        row = piece.row + 1;
-        col = piece.col - 1;
+    fn possible_queen_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+        let mut moves = self.possible_bishop_moves(piece);
 
-        while self.valid_move(piece, row, col) {
-            moves[row][col] = 1;
-            
-            if !self.grid[row][col].is_none() {
-                break;
-            }
-
-            if col == 0 {
-                break;
-            }
-            row += 1;
-            col -= 1;
-        }
-        
-        //up negative diagonal
-        row = piece.row - 1;
-        col = piece.col - 1;
-
-        while self.valid_move(piece, row, col) {
-            moves[row][col] = 1;
-            
-            if !self.grid[row][col].is_none() {
-                break;
-            }
-
-            if row == 0 || col == 0 {
-                break;
-            }
-
-            row -= 1;
-            col -= 1;
-        }
-        
-        //down negative diagonal
-        row = piece.row - 1;
-        col = piece.col + 1;
-
-        while self.valid_move(piece, row, col) {
-            moves[row][col] = 1;
-
-            if !self.grid[row][col].is_none() {
-                break;
-            }
-
-            if row == 0 {
-                break;
-            }
-
-            row -= 1;
-            col += 1;
-        }
+        // add 1's from rook moves
 
         return moves;
-   }
+    }
 
-   fn possible_knight_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+    fn possible_bishop_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+            let mut moves = [[0; 8]; 8];
+
+            //down positive diagonal
+            let mut row = piece.row + 1;
+            let mut col = piece.col + 1;
+
+            while self.valid_move(piece, row, col) {
+                moves[row][col] = 1;
+
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+
+                row += 1;
+                col += 1;
+            }
+
+            //up positive diagonal
+            row = piece.row + 1;
+            col = piece.col - 1;
+
+            while self.valid_move(piece, row, col) {
+                moves[row][col] = 1;
+                
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+
+                if col == 0 {
+                    break;
+                }
+                row += 1;
+                col -= 1;
+            }
+            
+            //up negative diagonal
+            row = piece.row - 1;
+            col = piece.col - 1;
+
+            while self.valid_move(piece, row, col) {
+                moves[row][col] = 1;
+                
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+
+                if row == 0 || col == 0 {
+                    break;
+                }
+
+                row -= 1;
+                col -= 1;
+            }
+            
+            //down negative diagonal
+            row = piece.row - 1;
+            col = piece.col + 1;
+
+            while self.valid_move(piece, row, col) {
+                moves[row][col] = 1;
+
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+
+                if row == 0 {
+                    break;
+                }
+
+                row -= 1;
+                col += 1;
+            }
+
+            return moves;
+    }
+
+    fn possible_knight_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
         let mut moves = [[0; 8]; 8];
 
         // top top left
@@ -276,7 +290,7 @@ impl Board {
         }
 
         return moves;
-   }
+    }
 }
 
 impl Default for Board {
@@ -363,48 +377,11 @@ impl fmt::Display for Board {
 
 fn main() {
     let mut b = Board{..Default::default()};
-    // println!("{}", b);
-    // println!("\nTrying to move pawn at (6,0) to (5,0)");
-    // b.move_piece(6, 0, 5, 0);
-    // println!("\n{}", b);
-    // println!("\nTrying to move king at (7,4) to (6,4)");
-    // b.move_piece(7, 4, 6, 4);
-    // println!("\n{}", b);
-    // println!("\nTrying to move king at (7,4) to (8,4)");
-    // b.move_piece(7, 4, 8, 4);
-    // println!("\n{}", b);
-    // println!("\nTrying to move pawn at (6,4) to (5,4)");
-    // b.move_piece(6, 4, 5, 4);
-    // println!("\n{}", b);
-    // println!("\nTrying to move king at (7,4) to (6,4)");
-    // b.move_piece(7, 4, 6, 4);
-    // println!("\n{}", b);
-    // println!("\nTrying to move king at (6,4) to (7,4)");
-    // b.move_piece(6, 4, 7, 4);
-    // println!("\n{}", b);
-    // println!("\nTrying to move pawn at (6,6) to (5,6)");
-    // b.move_piece(6, 6, 5, 6);
-    // println!("\n{}", b);
-    // println!("\nGenerating all possible moves for bishop at (7,5):");
-    // b.print_moves(&b.possible_bishop_moves(&b.grid[7][5].unwrap()));
-    // println!("\nTrying to move bishop at (7,5) to (4,2)");
-    // b.move_piece(7, 5, 4, 2);
-    // println!("\n{}", b);
-    // println!("\nGenerating all possible moves for bishop at (4,2):");
-    // b.print_moves(&b.possible_bishop_moves(&b.grid[4][2].unwrap()));
-    // println!("\n{}", b);
-    // println!("\nGenerating all possible moves for knight at (7,6)");
-    // b.print_moves(&b.possible_knight_moves(&b.grid[7][6].unwrap()));
-    // println!("\nTrying to move knight at (7,6) to (5,5)");
-    // b.move_piece(7, 6, 5, 5);
-    // println!("\n{}", b);
-    // println!("\nGenerating all possible moves for knight at (5,5)");
-    // b.print_moves(&b.possible_knight_moves(&b.grid[5][5].unwrap()));
-
+    
     println!("{}", b);
 
     // loop for input
-    use std::io::{stdin, stdout};
+    use std::io::{stdin};
     let mut s = String::new();
     println!("m -> Move\ns -> Show Moves\np -> Print board\ne -> exit");
     loop {
