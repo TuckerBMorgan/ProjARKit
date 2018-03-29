@@ -156,6 +156,7 @@ impl Board {
             PieceType::Bishop => self.possible_bishop_moves(piece),
             PieceType::Queen => self.possible_queen_moves(piece),
             PieceType::Pawn => self.possible_pawn_moves(piece),
+            PieceType::King => self.possible_king_moves(piece),
             _ => HashSet::new()
         }
     }
@@ -460,6 +461,86 @@ impl Board {
             if self.valid_move(piece, row, col) {
                 moves.insert(Coord { row, col });
             }
+        }
+
+        return moves;
+    }
+
+    fn possible_king_moves(&self, piece: &Piece) -> HashSet<Coord> {
+         let mut moves = HashSet::new();
+
+        // up
+        let mut row = piece.row - 1;
+        let mut col = piece.col;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+        
+
+        }
+
+        // down
+        row = piece.row + 1;
+        col = piece.col;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+        }
+
+        // left
+        row = piece.row;
+        col = piece.col - 1;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+        }
+
+        // right
+        row = piece.row;
+        col = piece.col + 1;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+        }
+
+        //down positive diagonal
+        row = piece.row + 1;
+        col = piece.col + 1;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+
+        }
+
+        //up positive diagonal
+        row = piece.row + 1;
+        col = piece.col - 1;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+           
+        }
+        
+        //up negative diagonal
+        row = piece.row - 1;
+        col = piece.col - 1;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+            
+        }
+        
+        //down negative diagonal
+        row = piece.row - 1;
+        col = piece.col + 1;
+
+        if self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
         }
 
         return moves;
