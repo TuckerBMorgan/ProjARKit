@@ -63,7 +63,7 @@ struct Board {
     grid: [[Option<Piece>; 8]; 8],
     rows: usize,
     cols: usize,
-    last_moved: Option<Piece>
+    last_move: (Option<Piece>, Option<Coord>)
 }
 
 impl Board {
@@ -79,6 +79,24 @@ impl Board {
                 piece.has_moved = true;
                 piece.row = to_row;
                 piece.col = to_col;
+
+                if piece.color == Color::White && from_row == 3 || piece.color == Color::Black && from_row == 4 {
+                    match piece.piece_type {
+                        PieceType::Pawn => {
+                            let last_piece = self.last_move.0;
+                            last_piece.map(|last_piece|
+                                if last_piece.piece_type == PieceType::Pawn {
+                                    if last_piece.col != from_col {
+                                        self.grid[last_piece.row][last_piece.col] = None;
+                                    }
+                                }
+                            );
+                        },
+                        _ => ()
+                    }
+                }
+                
+                self.last_move = (Some(piece), Some(Coord { row: from_row, col: from_col }));
                 self.grid[to_row][to_col] = Some(piece); 
                 self.grid[from_row][from_col] = None
             } else {
@@ -184,6 +202,14 @@ impl Board {
         if self.valid_move(piece, row, col) {
             if !self.grid[row][col].is_none() {
                 moves.insert(Coord { row, col} );
+            } else if piece.color == Color::White && piece.row == 3 || piece.color == Color::Black && piece.row == 4 {
+                let last_piece = self.last_move.0;
+
+                last_piece.map(|last_piece| {
+                    if last_piece.row == piece.row && last_piece.col == col {
+                        moves.insert(Coord { row, col });
+                    }
+                });
             }
         }
 
@@ -192,10 +218,18 @@ impl Board {
         if col > 0 {
             col = piece.col - 1;
         }
-
+        
         if self.valid_move(piece, row, col) {
             if !self.grid[row][col].is_none() {
                 moves.insert(Coord { row, col} );
+            } else if piece.color == Color::White && piece.row == 3 || piece.color == Color::Black && piece.row == 4 {
+                let last_piece = self.last_move.0;
+
+                last_piece.map(|last_piece| {
+                    if last_piece.row == piece.row && last_piece.col == col {
+                        moves.insert(Coord { row, col });
+                    }
+                });
             }
         }
 
@@ -273,80 +307,80 @@ impl Board {
     }
 
     fn possible_bishop_moves(&self, piece: &Piece) -> HashSet<Coord> {
-            let mut moves = HashSet::new();
+        let mut moves = HashSet::new();
 
-            //down positive diagonal
-            let mut row = piece.row + 1;
-            let mut col = piece.col + 1;
+        //down positive diagonal
+        let mut row = piece.row + 1;
+        let mut col = piece.col + 1;
 
-            while self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
 
-                if !self.grid[row][col].is_none() {
-                    break;
-                }
-
-                row += 1;
-                col += 1;
+            if !self.grid[row][col].is_none() {
+                break;
             }
 
-            //up positive diagonal
-            row = piece.row + 1;
-            col = piece.col - 1;
+            row += 1;
+            col += 1;
+        }
 
-            while self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-                
-                if !self.grid[row][col].is_none() {
-                    break;
-                }
+        //up positive diagonal
+        row = piece.row + 1;
+        col = piece.col - 1;
 
-                if col == 0 {
-                    break;
-                }
-                row += 1;
-                col -= 1;
-            }
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
             
-            //up negative diagonal
-            row = piece.row - 1;
-            col = piece.col - 1;
-
-            while self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-               
-                if !self.grid[row][col].is_none() {
-                    break;
-                }
-
-                if row == 0 || col == 0 {
-                    break;
-                }
-
-                row -= 1;
-                col -= 1;
+            if !self.grid[row][col].is_none() {
+                break;
             }
+
+            if col == 0 {
+                break;
+            }
+            row += 1;
+            col -= 1;
+        }
+        
+        //up negative diagonal
+        row = piece.row - 1;
+        col = piece.col - 1;
+
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
             
-            //down negative diagonal
-            row = piece.row - 1;
-            col = piece.col + 1;
-
-            while self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-
-                if !self.grid[row][col].is_none() {
-                    break;
-                }
-
-                if row == 0 {
-                    break;
-                }
-
-                row -= 1;
-                col += 1;
+            if !self.grid[row][col].is_none() {
+                break;
             }
 
-            return moves;
+            if row == 0 || col == 0 {
+                break;
+            }
+
+            row -= 1;
+            col -= 1;
+        }
+        
+        //down negative diagonal
+        row = piece.row - 1;
+        col = piece.col + 1;
+
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            if row == 0 {
+                break;
+            }
+
+            row -= 1;
+            col += 1;
+        }
+
+        return moves;
     }
 
     fn possible_knight_moves(&self, piece: &Piece) -> HashSet<Coord> {
@@ -491,7 +525,7 @@ impl Default for Board {
             ],
             rows: 8,
             cols: 8,
-            last_moved: None
+            last_move: (None, None)
         }
     }
 }
