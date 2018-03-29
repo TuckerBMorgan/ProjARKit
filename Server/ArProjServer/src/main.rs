@@ -1,24 +1,28 @@
 #![allow(dead_code)]
 
 use std::fmt;
+use std::collections::HashSet;
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum PieceType {
     Pawn,
     King,
     Queen,
-    LRook,
-    RRook,
-    LBishop,
-    RBishop,
-    LKnight,
-    RKnight
+    Rook,
+    Bishop,
+    Knight,
 }
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 enum Color {
     White,
     Black
+}
+
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone)]
+struct Coord {
+    row: usize,
+    col: usize
 }
 
 #[derive(PartialEq, Debug, Copy, Clone)]
@@ -36,18 +40,18 @@ impl fmt::Display for Piece {
                 match self.piece_type {
                     PieceType::King => "♔",
                     PieceType::Queen => "♕",
-                    PieceType::LRook | PieceType::RRook => "♖",
-                    PieceType::LBishop | PieceType::RBishop => "♗",
-                    PieceType::LKnight | PieceType::RKnight => "♘",
+                    PieceType::Rook => "♖",
+                    PieceType::Bishop => "♗",
+                    PieceType::Knight => "♘",
                     _ => "♙",
                 }
             } else {
                 match self.piece_type {
                     PieceType::King => "♚",
                     PieceType::Queen => "♛",
-                    PieceType::LRook | PieceType::RRook => "♜",
-                    PieceType::LBishop | PieceType::RBishop => "♝",
-                    PieceType::LKnight | PieceType::RKnight => "♞",
+                    PieceType::Rook => "♜",
+                    PieceType::Bishop => "♝",
+                    PieceType::Knight => "♞",
                     _ => "♟️",
             }
         };
@@ -67,9 +71,10 @@ impl Board {
         if !piece.is_none() {
             let mut piece = piece.unwrap();
             let moves = self.possible_moves(&piece);
+            let move_coord = Coord { row:to_row, col:to_col };
 
             // if the chosen move is in the generated possible moves
-            if moves[to_row][to_col] == 1 {
+            if moves.contains(&move_coord) {
                 piece.has_moved = true;
                 piece.row = to_row;
                 piece.col = to_col;
@@ -102,46 +107,179 @@ impl Board {
         return true;
     }
 
-    fn print_moves(&self, moves: &[[u8; 8]; 8]) {
+    fn print_moves(&self, moves: &HashSet<Coord>) {
        let mut output = String::new();
 
        for row in 0..8 {
            for col in 0..8 {
-               output.push_str(&format!("{} ", moves[row][col]));
+               let coord = Coord { row, col };
+               output.push_str(&format!("{} ", 
+                    if moves.contains(&coord) {
+                        "1"
+                    } else {
+                        "0"
+                    }));
            }
            output.push('\n');
        }
+       for coord in moves.iter() {
+           output.push_str(&format!("({}, {}), ", coord.row, coord.col));
+       }
+       output.pop();
        output.pop();
 
        println!("{}", output);
     }
    
-    fn possible_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+    fn possible_moves(&self, piece: &Piece) -> HashSet<Coord> {
         match piece.piece_type {
-            PieceType::LKnight | PieceType::RKnight => self.possible_knight_moves(piece),
-            PieceType::LBishop | PieceType::RBishop => self.possible_bishop_moves(piece),
+            PieceType::Knight => self.possible_knight_moves(piece),
+            PieceType::Bishop => self.possible_bishop_moves(piece),
             PieceType::Queen => self.possible_queen_moves(piece),
-            _ => [[0; 8]; 8]
+            PieceType::Pawn => self.possible_pawn_moves(piece),
+            _ => HashSet::new()
         }
     }
 
-    fn possible_queen_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
+    fn possible_pawn_moves(&self, piece: &Piece) -> HashSet<Coord> {
+        let mut moves = HashSet::new();
+
+        let mut row = piece.row;
+        let mut col = piece.col;
+
+        if piece.color == Color::White {
+            row -= 1;
+        } else {
+            row += 1;
+        }
+
+        if self.valid_move(piece, row, col) {
+            if self.grid[row][col].is_none() {
+                moves.insert(Coord { row, col });
+            }
+        }
+
+        if !piece.has_moved {
+            if piece.color == Color::White {
+                row -= 1;
+            } else {
+                row += 1;
+            }
+            
+            if self.grid[row][col].is_none() {
+                moves.insert(Coord { row, col });
+            }
+        }
+
+        row = piece.row;
+        col = piece.col + 1;
+
+        if piece.color == Color::White {
+            row -= 1;
+        } else {
+            row += 1;
+        }
+
+        if self.valid_move(piece, row, col) {
+            if !self.grid[row][col].is_none() {
+                moves.insert(Coord { row, col} );
+            }
+        }
+
+        col = piece.col;
+
+        if col > 0 {
+            col = piece.col - 1;
+        }
+
+        if self.valid_move(piece, row, col) {
+            if !self.grid[row][col].is_none() {
+                moves.insert(Coord { row, col} );
+            }
+        }
+
+        return moves
+    }
+
+    fn possible_queen_moves(&self, piece: &Piece) -> HashSet<Coord> {
         let mut moves = self.possible_bishop_moves(piece);
 
-        // add 1's from rook moves
+        moves.extend(&self.possible_rook_moves(piece));
 
         return moves;
     }
 
-    fn possible_bishop_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
-            let mut moves = [[0; 8]; 8];
+    fn possible_rook_moves(&self, piece: &Piece) -> HashSet<Coord> {
+        let mut moves = HashSet::new();
+
+        // up
+        let mut row = piece.row - 1;
+        let mut col = piece.col;
+
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            row -= 1;
+        }
+
+        // down
+        row = piece.row + 1;
+        col = piece.col;
+
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            row += 1;
+        }
+
+        // left
+        row = piece.row;
+        col = piece.col - 1;
+
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            col -= 1;
+        }
+
+        // right
+        row = piece.row;
+        col = piece.col + 1;
+
+        while self.valid_move(piece, row, col) {
+            moves.insert(Coord { row, col });
+
+            if !self.grid[row][col].is_none() {
+                break;
+            }
+
+            col += 1;
+        }
+
+        return moves;
+    }
+
+    fn possible_bishop_moves(&self, piece: &Piece) -> HashSet<Coord> {
+            let mut moves = HashSet::new();
 
             //down positive diagonal
             let mut row = piece.row + 1;
             let mut col = piece.col + 1;
 
             while self.valid_move(piece, row, col) {
-                moves[row][col] = 1;
+                moves.insert(Coord { row, col });
 
                 if !self.grid[row][col].is_none() {
                     break;
@@ -156,7 +294,7 @@ impl Board {
             col = piece.col - 1;
 
             while self.valid_move(piece, row, col) {
-                moves[row][col] = 1;
+                moves.insert(Coord { row, col });
                 
                 if !self.grid[row][col].is_none() {
                     break;
@@ -174,8 +312,8 @@ impl Board {
             col = piece.col - 1;
 
             while self.valid_move(piece, row, col) {
-                moves[row][col] = 1;
-                
+                moves.insert(Coord { row, col });
+               
                 if !self.grid[row][col].is_none() {
                     break;
                 }
@@ -193,7 +331,7 @@ impl Board {
             col = piece.col + 1;
 
             while self.valid_move(piece, row, col) {
-                moves[row][col] = 1;
+                moves.insert(Coord { row, col });
 
                 if !self.grid[row][col].is_none() {
                     break;
@@ -210,8 +348,8 @@ impl Board {
             return moves;
     }
 
-    fn possible_knight_moves(&self, piece: &Piece) -> [[u8; 8]; 8] {
-        let mut moves = [[0; 8]; 8];
+    fn possible_knight_moves(&self, piece: &Piece) -> HashSet<Coord> {
+        let mut moves = HashSet::new();
 
         // top top left
         if piece.row >= 2 && piece.col >= 1{
@@ -219,7 +357,7 @@ impl Board {
             let col = piece.col - 1;
 
             if self.valid_move(piece, row, col) {
-                moves[row][col] = 1
+                moves.insert(Coord { row, col });
             }
         }
 
@@ -229,7 +367,7 @@ impl Board {
             let col = piece.col + 1;
             
             if self.valid_move(piece, row, col) {
-                moves[row][col] = 1
+                moves.insert(Coord { row, col });
             }
         }
 
@@ -239,7 +377,7 @@ impl Board {
             let col = piece.col + 2;
             
             if self.valid_move(piece, row, col) {
-                moves[row][col] = 1
+                moves.insert(Coord { row, col });
             }
         }
 
@@ -249,7 +387,7 @@ impl Board {
             let col = piece.col - 2;
 
             if self.valid_move(piece, row, col) {
-                moves[row][col] = 1
+                moves.insert(Coord { row, col });
             }
         }
 
@@ -259,7 +397,7 @@ impl Board {
             let col = piece.col - 2;
 
             if self.valid_move(piece, row, col) {
-                moves[row][col] = 1
+                moves.insert(Coord { row, col });
             }
         }
 
@@ -268,7 +406,7 @@ impl Board {
         let col = piece.col + 2;
 
         if self.valid_move(piece, row, col) {
-            moves[row][col] = 1
+            moves.insert(Coord { row, col });
         }
 
         // bot bot right
@@ -276,7 +414,7 @@ impl Board {
         let col = piece.col + 1;
 
         if self.valid_move(piece, row, col) {
-            moves[row][col] = 1
+            moves.insert(Coord { row, col });
         }
 
         // bot bot left
@@ -285,7 +423,7 @@ impl Board {
             let col = piece.col - 1;
 
             if self.valid_move(piece, row, col) {
-                moves[row][col] = 1
+                moves.insert(Coord { row, col });
             }
         }
 
@@ -298,14 +436,14 @@ impl Default for Board {
         Board {
             grid: [
                 [
-                    Some(Piece { piece_type: PieceType::RRook, has_moved: false, row: 0, col: 0, color: Color::Black}), 
-                    Some(Piece { piece_type: PieceType::RKnight, has_moved: false, row: 0, col: 1, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::RBishop, has_moved: false, row: 0, col: 2, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 0, color: Color::Black}), 
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 1, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 2, color: Color::Black}),
                     Some(Piece { piece_type: PieceType::Queen, has_moved: false, row: 0, col: 3, color: Color::Black}),
                     Some(Piece { piece_type: PieceType::King, has_moved: false, row: 0, col: 4, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::LBishop, has_moved: false, row: 0, col: 5, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::LKnight, has_moved: false, row: 0, col: 6, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::LRook, has_moved: false, row: 0, col: 7, color: Color::Black})
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 5, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 6, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 7, color: Color::Black})
                 ],
                 [
                     Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 0, color: Color::Black}),
@@ -340,14 +478,14 @@ impl Default for Board {
                     Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 7, color: Color::White}),
                 ],
                 [
-                    Some(Piece { piece_type: PieceType::LRook, has_moved: false, row: 7, col: 0, color: Color::White}), 
-                    Some(Piece { piece_type: PieceType::LKnight, has_moved: false, row: 7, col: 1, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::LBishop, has_moved: false, row: 7, col: 2, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 7, col: 0, color: Color::White}), 
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 7, col: 1, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 7, col: 2, color: Color::White}),
                     Some(Piece { piece_type: PieceType::Queen, has_moved: false, row: 7, col: 3, color: Color::White}),
                     Some(Piece { piece_type: PieceType::King, has_moved: false, row: 7, col: 4, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::RBishop, has_moved: false, row: 7, col: 5, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::RKnight, has_moved: false, row: 7, col: 6, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::RRook, has_moved: false, row: 7, col: 7, color: Color::White})
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 7, col: 5, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 7, col: 6, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 7, col: 7, color: Color::White})
                 ],
             ],
             rows: 8,
@@ -392,6 +530,7 @@ fn main() {
             'm' => {
                 println!("Enter values: (format => row1 col1 row2 col2)");
                 let mut x = String::new();
+
                 stdin().read_line(&mut x).expect("wtf");
 
                 let new_input = x.trim_right();
