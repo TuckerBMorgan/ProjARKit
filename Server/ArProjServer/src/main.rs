@@ -62,7 +62,8 @@ impl fmt::Display for Piece {
 struct Board {
     grid: [[Option<Piece>; 8]; 8],
     rows: usize,
-    cols: usize
+    cols: usize,
+    last_moved: Option<Piece>
 }
 
 impl Board {
@@ -490,6 +491,7 @@ impl Default for Board {
             ],
             rows: 8,
             cols: 8,
+            last_moved: None
         }
     }
 }
