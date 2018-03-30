@@ -156,8 +156,8 @@ impl Board {
             PieceType::Bishop => self.possible_bishop_moves(piece),
             PieceType::Queen => self.possible_queen_moves(piece),
             PieceType::Pawn => self.possible_pawn_moves(piece),
+            PieceType::Rook => self.possible_rook_moves(piece),
             PieceType::King => self.possible_king_moves(piece),
-            _ => HashSet::new()
         }
     }
 
@@ -248,23 +248,29 @@ impl Board {
     fn possible_rook_moves(&self, piece: &Piece) -> HashSet<Coord> {
         let mut moves = HashSet::new();
 
-        // up
-        let mut row = piece.row - 1;
-        let mut col = piece.col;
+        if piece.row > 0 {
+            // up
+            let mut row = piece.row - 1;
+            let col = piece.col;
 
-        while self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
+            while self.valid_move(piece, row, col) {
+                moves.insert(Coord { row, col });
 
-            if !self.grid[row][col].is_none() {
-                break;
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+
+                if row > 0 {
+                    row -= 1;
+                } else {
+                    break;
+                }
             }
-
-            row -= 1;
         }
 
         // down
-        row = piece.row + 1;
-        col = piece.col;
+        let mut row = piece.row + 1;
+        let mut col = piece.col;
 
         while self.valid_move(piece, row, col) {
             moves.insert(Coord { row, col });
@@ -276,18 +282,23 @@ impl Board {
             row += 1;
         }
 
-        // left
-        row = piece.row;
-        col = piece.col - 1;
+        if piece.col > 0 {
+            // left
+            row = piece.row;
+            col = piece.col - 1;
 
-        while self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
+            while self.valid_move(piece, row, col) {
+                moves.insert(Coord { row, col });
 
-            if !self.grid[row][col].is_none() {
-                break;
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+                if col > 0 {
+                    col -= 1;
+                } else {
+                    break;
+                }
             }
-
-            col -= 1;
         }
 
         // right
@@ -325,60 +336,67 @@ impl Board {
             col += 1;
         }
 
-        //up positive diagonal
-        row = piece.row + 1;
-        col = piece.col - 1;
+        if piece.col > 0 {
+            //up positive diagonal
+            row = piece.row + 1;
+            col = piece.col - 1;
 
-        while self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-            
-            if !self.grid[row][col].is_none() {
-                break;
-            }
+            while self.valid_move(piece, row, col) {
+                moves.insert(Coord { row, col });
+                
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
 
-            if col == 0 {
-                break;
+                if col > 0 {
+                    row += 1;
+                    col -= 1;
+                } else {
+                    break;
+                }
             }
-            row += 1;
-            col -= 1;
         }
-        
-        //up negative diagonal
-        row = piece.row - 1;
-        col = piece.col - 1;
 
-        while self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-            
-            if !self.grid[row][col].is_none() {
-                break;
+        if piece.row > 0 && piece.col > 0 { 
+            //up negative diagonal
+            row = piece.row - 1;
+            col = piece.col - 1;
+
+            while self.valid_move(piece, row, col) {
+                moves.insert(Coord { row, col });
+                
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+                
+                if row > 0 && col > 0 {
+                    row -= 1;
+                    col -= 1;
+                } else {
+                    break;
+                }
             }
-
-            if row == 0 || col == 0 {
-                break;
-            }
-
-            row -= 1;
-            col -= 1;
         }
-        
-        //down negative diagonal
-        row = piece.row - 1;
-        col = piece.col + 1;
 
-        while self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
+        if piece.row > 0 { 
+            //down negative diagonal
+            row = piece.row - 1;
+            col = piece.col + 1;
 
-            if !self.grid[row][col].is_none() {
-                break;
+            while self.valid_move(piece, row, col) {
+                moves.insert(Coord { row, col });
+
+                if !self.grid[row][col].is_none() {
+                    break;
+                }
+                
+                if row > 0 {
+                    row -= 1;
+                    col += 1;
+                } else {
+                    break;
+                }
             }
-
-            if row == 0 {
-                break;
-            }
-
-            row -= 1;
-            col += 1;
         }
 
         return moves;
@@ -467,34 +485,40 @@ impl Board {
     }
 
     fn possible_king_moves(&self, piece: &Piece) -> HashSet<Coord> {
-         let mut moves = HashSet::new();
+        let mut moves = HashSet::new();
 
-        // up
-        let mut row = piece.row - 1;
-        let mut col = piece.col;
+        if piece.row > 0 {
+            // up
+            let row = piece.row - 1;
+            let col = piece.col;
 
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-
-        
-
+            if self.valid_move(piece, row, col) {
+                if !self.in_check(Coord { row, col }, piece.color) {
+                    moves.insert(Coord { row, col });
+                }
+            }
         }
 
         // down
-        row = piece.row + 1;
-        col = piece.col;
+        let mut row = piece.row + 1;
+        let mut col = piece.col;
 
         if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-
+            if !self.in_check(Coord { row, col }, piece.color) {
+                moves.insert(Coord { row, col });
+            }
         }
 
-        // left
-        row = piece.row;
-        col = piece.col - 1;
+        if piece.col > 0 {
+            // left
+            row = piece.row;
+            col = piece.col - 1;
 
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
+            if self.valid_move(piece, row, col) {
+                if !self.in_check(Coord { row, col }, piece.color) {
+                    moves.insert(Coord { row, col });
+                }
+            }
         }
 
         // right
@@ -502,8 +526,9 @@ impl Board {
         col = piece.col + 1;
 
         if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-
+            if !self.in_check(Coord { row, col }, piece.color) {
+                moves.insert(Coord { row, col });
+            }
         }
 
         //down positive diagonal
@@ -511,39 +536,71 @@ impl Board {
         col = piece.col + 1;
 
         if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-
-
+            if !self.in_check(Coord { row, col }, piece.color ) {
+                moves.insert(Coord { row, col });
+            }
         }
 
-        //up positive diagonal
-        row = piece.row + 1;
-        col = piece.col - 1;
+        if piece.col > 0 {
+            //up positive diagonal
+            row = piece.row + 1;
+            col = piece.col - 1;
 
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-           
+            if self.valid_move(piece, row, col) {
+                if !self.in_check(Coord { row, col }, piece.color ) {
+                    moves.insert(Coord { row, col });
+                }
+            }
         }
-        
-        //up negative diagonal
-        row = piece.row - 1;
-        col = piece.col - 1;
 
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-            
+        if piece.row > 0 && piece.col > 0 { 
+            //up negative diagonal
+            row = piece.row - 1;
+            col = piece.col - 1;
+
+            if self.valid_move(piece, row, col) {
+                if !self.in_check(Coord { row, col }, piece.color ) {
+                    moves.insert(Coord { row, col });
+                }
+            }
         }
-        
-        //down negative diagonal
-        row = piece.row - 1;
-        col = piece.col + 1;
 
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
+        if piece.row > 0 { 
+            //down negative diagonal
+            row = piece.row - 1;
+            col = piece.col + 1;
 
+            if self.valid_move(piece, row, col) {
+                if !self.in_check(Coord { row, col }, piece.color ) {
+                    moves.insert(Coord { row, col });
+                }
+            }
         }
 
         return moves;
+    }
+
+    fn in_check(&self, pos: Coord, color: Color) -> bool {
+        for row in 0..self.rows {
+            for col in 0..self.cols {
+                let spot = Coord { row, col };
+                if spot != pos {
+                    let curr_piece = self.grid[row][col];
+                    let mut check = false;
+                    curr_piece.map(|curr_piece|
+                        if curr_piece.color != color {
+                            if self.possible_moves(&curr_piece).contains(&pos) {
+                                check = true;
+                            }
+                        }
+                    );
+                    if check == true {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
 
@@ -653,13 +710,15 @@ fn main() {
                 let new_input = x.trim_right();
                 let vals: Vec<&str> = new_input.split(" ").collect();
 
-                let row1 = vals[0].parse::<usize>().unwrap();
-                let col1 = vals[1].parse::<usize>().unwrap();
-                let row2 = vals[2].parse::<usize>().unwrap();
-                let col2 = vals[3].parse::<usize>().unwrap();
+                if vals.len() == 4 {
+                    let row1 = vals[0].parse::<usize>().unwrap();
+                    let col1 = vals[1].parse::<usize>().unwrap();
+                    let row2 = vals[2].parse::<usize>().unwrap();
+                    let col2 = vals[3].parse::<usize>().unwrap();
 
-                println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
-                b.move_piece(row1, col1, row2, col2);
+                    println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
+                    b.move_piece(row1, col1, row2, col2);
+                }
             },
             's' => { 
                 println!("Enter values: (format => row col)");
@@ -669,12 +728,14 @@ fn main() {
                 let new_input = x.trim_right();
                 let vals: Vec<&str> = new_input.split(" ").collect();
 
-                let row = vals[0].parse::<usize>().unwrap();
-                let col = vals[1].parse::<usize>().unwrap();
+                if vals.len() == 2 {
+                    let row = vals[0].parse::<usize>().unwrap();
+                    let col = vals[1].parse::<usize>().unwrap();
 
-                println!("Generating possible moves for ({}, {})", row, col);
+                    println!("Generating possible moves for ({}, {})", row, col);
 
-                b.print_moves(&b.possible_moves(&b.grid[row][col].unwrap()));
+                    b.print_moves(&b.possible_moves(&b.grid[row][col].unwrap()));
+                }
             },
             'p' => { println!("{}", b); continue },
             'e' => break,
