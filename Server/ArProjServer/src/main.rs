@@ -59,71 +59,70 @@ impl fmt::Display for Piece {
     }
 }
 
-struct Board {
+struct GameState {
     grid: [[Option<Piece>; 8]; 8],
     rows: usize,
     cols: usize,
     last_move: (Option<Piece>, Option<Coord>)
 }
 
-impl Board {
+impl GameState {
     fn move_piece(&mut self, from_row: usize, from_col: usize, to_row: usize, to_col: usize) {
         let piece = self.grid[from_row][from_col];
-        if !piece.is_none() {
-            let mut piece = piece.unwrap();
-            let moves = self.possible_moves(&piece);
-            let move_coord = Coord { row:to_row, col:to_col };
+        match piece {
+            Some(mut piece) => {
+                let moves = self.possible_moves(&piece);
+                let move_coord = Coord { row:to_row, col:to_col };
 
-            // if the chosen move is in the generated possible moves
-            if moves.contains(&move_coord) {
-                piece.has_moved = true;
-                piece.row = to_row;
-                piece.col = to_col;
+                // if the chosen move is in the generated possible moves
+                if moves.contains(&move_coord) {
+                    piece.has_moved = true;
+                    piece.row = to_row;
+                    piece.col = to_col;
 
-                if piece.color == Color::White && from_row == 3 || piece.color == Color::Black && from_row == 4 {
-                    match piece.piece_type {
-                        PieceType::Pawn => {
-                            let last_piece = self.last_move.0;
-                            last_piece.map(|last_piece|
-                                if last_piece.piece_type == PieceType::Pawn {
-                                    if last_piece.col != from_col {
+                    if piece.color == Color::White && from_row == 3 || piece.color == Color::Black && from_row == 4 {
+                        match piece.piece_type {
+                            PieceType::Pawn => {
+                                let last_piece = self.last_move.0;
+                                last_piece.map(|last_piece|
+                                    if last_piece.piece_type == PieceType::Pawn && last_piece.col != from_col {
                                         self.grid[last_piece.row][last_piece.col] = None;
                                     }
-                                }
-                            );
-                        },
-                        _ => ()
+                                );
+                            },
+                            _ => ()
+                        }
+                    } else if piece.piece_type == PieceType::Pawn && to_row == (if piece.color == Color::White {0} else {self.rows - 1}) {
+                        // TODO: handle promotion properly
+                        // for the moment, just promote to queen
+                        piece.piece_type = PieceType::Queen;
                     }
+                    
+                    self.last_move = (Some(piece), Some(Coord { row: from_row, col: from_col }));
+                    self.grid[to_row][to_col] = Some(piece); 
+                    self.grid[from_row][from_col] = None
+                } else {
+                    println!("[Error] Attempt to move piece to invalid square")
                 }
-                
-                self.last_move = (Some(piece), Some(Coord { row: from_row, col: from_col }));
-                self.grid[to_row][to_col] = Some(piece); 
-                self.grid[from_row][from_col] = None
-            } else {
-                println!("[Error] Attempt to move piece to invalid square");
-            }
-        } else {
-            println!("[Error] Attempt to move an empty piece");                
+            },
+            None => println!("[Error] Attempt to move an invalid piece")
         }
-    } 
+    }
+
+    fn in_bounds(&self, row: usize, col: usize) -> bool {
+        row < self.rows && col < self.cols
+    }
 
     fn valid_move(&self, piece: &Piece, row: usize, col: usize) -> bool {
-        if row > self.rows - 1 || col > self.cols - 1 {
+        if !self.in_bounds(row, col) {
             return false;
         }
 
         let target_piece = self.grid[row][col];
-        if !target_piece.is_none() {
-            if piece.color == target_piece.unwrap().color {
-                return false;
-            }
-
-            if piece.row == row && piece.col == col {
-                return false;
-            }
+        match target_piece {
+            Some(target_piece) => !(piece.color == target_piece.color || piece.row == row && piece.col == col),
+            None => true
         }
-
-        return true;
     }
 
     fn print_moves(&self, moves: &HashSet<Coord>) {
@@ -161,6 +160,15 @@ impl Board {
         }
     }
 
+    fn insert_if_valid(&self, piece: &Piece, row: usize, col: usize, moves: &mut HashSet<Coord>) {
+        if self.valid_move(piece, row, col) {
+            if piece.piece_type != PieceType::King 
+            || piece.piece_type == PieceType::King && self.in_check(Coord {row, col}, piece.color) {
+                moves.insert(Coord { row, col });
+            }
+        }
+    }
+
     fn possible_pawn_moves(&self, piece: &Piece) -> HashSet<Coord> {
         let mut moves = HashSet::new();
 
@@ -173,12 +181,10 @@ impl Board {
             row += 1;
         }
 
-        if self.valid_move(piece, row, col) {
-            if self.grid[row][col].is_none() {
-                moves.insert(Coord { row, col });
-            }
+        if self.in_bounds(row, col) && self.grid[row][col].is_none() {
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
-
+        
         if !piece.has_moved {
             if piece.color == Color::White {
                 row -= 1;
@@ -186,8 +192,8 @@ impl Board {
                 row += 1;
             }
             
-            if self.grid[row][col].is_none() {
-                moves.insert(Coord { row, col });
+            if self.in_bounds(row, col) && self.grid[row][col].is_none() {
+                self.insert_if_valid(piece, row, col, &mut moves);
             }
         }
 
@@ -200,18 +206,16 @@ impl Board {
             row += 1;
         }
 
-        if self.valid_move(piece, row, col) {
-            if !self.grid[row][col].is_none() {
-                moves.insert(Coord { row, col} );
-            } else if piece.color == Color::White && piece.row == 3 || piece.color == Color::Black && piece.row == 4 {
-                let last_piece = self.last_move.0;
+        if self.in_bounds(row, col) && !self.grid[row][col].is_none() {
+            self.insert_if_valid(piece, row, col, &mut moves);
+        } else if piece.color == Color::White && piece.row == 3 || piece.color == Color::Black && piece.row == 4 {
+            let last_piece = self.last_move.0;
 
-                last_piece.map(|last_piece| {
-                    if last_piece.row == piece.row && last_piece.col == col {
-                        moves.insert(Coord { row, col });
-                    }
-                });
-            }
+            last_piece.map(|last_piece| {
+                if last_piece.row == piece.row && last_piece.col == col {
+                    self.insert_if_valid(piece, row, col, &mut moves);
+                }
+            });
         }
 
         col = piece.col;
@@ -220,18 +224,16 @@ impl Board {
             col = piece.col - 1;
         }
         
-        if self.valid_move(piece, row, col) {
-            if !self.grid[row][col].is_none() {
-                moves.insert(Coord { row, col} );
-            } else if piece.color == Color::White && piece.row == 3 || piece.color == Color::Black && piece.row == 4 {
-                let last_piece = self.last_move.0;
+        if self.in_bounds(row, col) && !self.grid[row][col].is_none() {
+            self.insert_if_valid(piece, row, col, &mut moves);
+        } else if piece.color == Color::White && piece.row == 3 || piece.color == Color::Black && piece.row == 4 {
+            let last_piece = self.last_move.0;
 
-                last_piece.map(|last_piece| {
-                    if last_piece.row == piece.row && last_piece.col == col {
-                        moves.insert(Coord { row, col });
-                    }
-                });
-            }
+            last_piece.map(|last_piece| {
+                if last_piece.row == piece.row && last_piece.col == col {
+                    self.insert_if_valid(piece, row, col, &mut moves);
+                }
+            });
         }
 
         return moves
@@ -409,76 +411,52 @@ impl Board {
         if piece.row >= 2 && piece.col >= 1{
             let row = piece.row - 2;
             let col = piece.col - 1;
-
-            if self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // top top right
         if piece.row >= 2 {
             let row = piece.row - 2;
             let col = piece.col + 1;
-            
-            if self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // top right
         if piece.row >= 1 {
             let row = piece.row - 1;
             let col = piece.col + 2;
-            
-            if self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // top left
         if piece.row >= 1 && piece.col >= 2 {
             let row = piece.row - 1;
             let col = piece.col - 2;
-
-            if self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // bot left
         if piece.col >= 2 {
             let row = piece.row + 1;
             let col = piece.col - 2;
-
-            if self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // bot right
         let row = piece.row + 1;
         let col = piece.col + 2;
-
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-        }
+        self.insert_if_valid(piece, row, col, &mut moves);
 
         // bot bot right
         let row = piece.row + 2;
         let col = piece.col + 1;
-
-        if self.valid_move(piece, row, col) {
-            moves.insert(Coord { row, col });
-        }
+        self.insert_if_valid(piece, row, col, &mut moves);
 
         // bot bot left
         if piece.col >= 1 {
             let row = piece.row + 2;
             let col = piece.col - 1;
-
-            if self.valid_move(piece, row, col) {
-                moves.insert(Coord { row, col });
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         return moves;
@@ -491,90 +469,50 @@ impl Board {
             // up
             let row = piece.row - 1;
             let col = piece.col;
-
-            if self.valid_move(piece, row, col) {
-                if !self.in_check(Coord { row, col }, piece.color) {
-                    moves.insert(Coord { row, col });
-                }
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // down
         let mut row = piece.row + 1;
         let mut col = piece.col;
-
-        if self.valid_move(piece, row, col) {
-            if !self.in_check(Coord { row, col }, piece.color) {
-                moves.insert(Coord { row, col });
-            }
-        }
+        self.insert_if_valid(piece, row, col, &mut moves);
 
         if piece.col > 0 {
             // left
             row = piece.row;
             col = piece.col - 1;
-
-            if self.valid_move(piece, row, col) {
-                if !self.in_check(Coord { row, col }, piece.color) {
-                    moves.insert(Coord { row, col });
-                }
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         // right
         row = piece.row;
         col = piece.col + 1;
-
-        if self.valid_move(piece, row, col) {
-            if !self.in_check(Coord { row, col }, piece.color) {
-                moves.insert(Coord { row, col });
-            }
-        }
+        self.insert_if_valid(piece, row, col, &mut moves);
 
         //down positive diagonal
         row = piece.row + 1;
         col = piece.col + 1;
-
-        if self.valid_move(piece, row, col) {
-            if !self.in_check(Coord { row, col }, piece.color ) {
-                moves.insert(Coord { row, col });
-            }
-        }
+        self.insert_if_valid(piece, row, col, &mut moves);
 
         if piece.col > 0 {
             //up positive diagonal
             row = piece.row + 1;
             col = piece.col - 1;
-
-            if self.valid_move(piece, row, col) {
-                if !self.in_check(Coord { row, col }, piece.color ) {
-                    moves.insert(Coord { row, col });
-                }
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         if piece.row > 0 && piece.col > 0 { 
             //up negative diagonal
             row = piece.row - 1;
             col = piece.col - 1;
-
-            if self.valid_move(piece, row, col) {
-                if !self.in_check(Coord { row, col }, piece.color ) {
-                    moves.insert(Coord { row, col });
-                }
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         if piece.row > 0 { 
             //down negative diagonal
             row = piece.row - 1;
             col = piece.col + 1;
-
-            if self.valid_move(piece, row, col) {
-                if !self.in_check(Coord { row, col }, piece.color ) {
-                    moves.insert(Coord { row, col });
-                }
-            }
+            self.insert_if_valid(piece, row, col, &mut moves);
         }
 
         return moves;
@@ -604,9 +542,13 @@ impl Board {
     }
 }
 
-impl Default for Board {
-    fn default() -> Board {
-        Board {
+fn gen_piece(piece_type: PieceType, has_moved: bool, row: usize, col: usize, color: Color) -> Option<Piece> {
+    Some(Piece {piece_type, has_moved, row, col, color})
+}
+
+impl Default for GameState {
+    fn default() -> GameState {
+        GameState {
             grid: [
                 [
                     Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 0, color: Color::Black}), 
@@ -668,16 +610,15 @@ impl Default for Board {
     }
 }
 
-impl fmt::Display for Board {
+impl fmt::Display for GameState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut board_rep = String::new();
         for row in 0..self.rows {
             for col in  0..self.cols {
                 let curr_piece = &self.grid[row][col];
-                if curr_piece.is_none() {
-                    board_rep.push_str(" ");
-                } else {
-                    board_rep.push_str(&format!("{}", curr_piece.as_ref().unwrap()));
+                match curr_piece {
+                    Some(piece) => board_rep.push_str(&format!("{}", piece)),
+                    None => board_rep.push_str(" ")
                 }
             }
             board_rep.push('\n');
@@ -688,7 +629,7 @@ impl fmt::Display for Board {
 }
 
 fn main() {
-    let mut b = Board{..Default::default()};
+    let mut b = GameState{..Default::default()};
     
     println!("{}", b);
 
@@ -702,40 +643,49 @@ fn main() {
         let input = s.trim_right();
         match input.chars().next().unwrap() {
             'm' => {
-                println!("Enter values: (format => row1 col1 row2 col2)");
-                let mut x = String::new();
+                let mut x = String::new(); 
+                let mut vals = input.split_whitespace().collect::<Vec<&str>>();
 
-                stdin().read_line(&mut x).expect("wtf");
+                if vals.len() != 5 {
+                    println!("Enter values: (format => row1 col1 row2 col2)");
+                    stdin().read_line(&mut x).expect("wtf");
+                    vals = x.split_whitespace().collect();
+                } else {
+                    vals.remove(0); 
+                }
 
-                let new_input = x.trim_right();
-                let vals: Vec<&str> = new_input.split(" ").collect();
+                let row1 = vals[0].parse::<usize>().unwrap();
+                let col1 = vals[1].parse::<usize>().unwrap();
+                let row2 = vals[2].parse::<usize>().unwrap();
+                let col2 = vals[3].parse::<usize>().unwrap();
 
-                if vals.len() == 4 {
-                    let row1 = vals[0].parse::<usize>().unwrap();
-                    let col1 = vals[1].parse::<usize>().unwrap();
-                    let row2 = vals[2].parse::<usize>().unwrap();
-                    let col2 = vals[3].parse::<usize>().unwrap();
+                let piece = b.grid[row1][col1];
 
+                if !piece.is_none() {
                     println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
                     b.move_piece(row1, col1, row2, col2);
                 }
             },
-            's' => { 
-                println!("Enter values: (format => row col)");
-                let mut x = String::new();
-                stdin().read_line(&mut x).expect("wtf");
+            's' => {
+                let mut x = String::new(); 
+                let mut vals = input.split_whitespace().collect::<Vec<&str>>();
 
-                let new_input = x.trim_right();
-                let vals: Vec<&str> = new_input.split(" ").collect();
+                if vals.len() != 3 {
+                    println!("Enter values: (format => row col)");
+                    stdin().read_line(&mut x).expect("wtf");
 
-                if vals.len() == 2 {
-                    let row = vals[0].parse::<usize>().unwrap();
-                    let col = vals[1].parse::<usize>().unwrap();
-
-                    println!("Generating possible moves for ({}, {})", row, col);
-
-                    b.print_moves(&b.possible_moves(&b.grid[row][col].unwrap()));
+                    vals = x.split_whitespace().collect();
+                } else {
+                    vals.remove(0);
                 }
+
+                let row = vals[0].parse::<usize>().unwrap();
+                let col = vals[1].parse::<usize>().unwrap();
+
+                b.grid[row][col].map(|piece| {
+                   println!("Generating possible moves for ({}, {})", row, col);
+                   b.print_moves(&b.possible_moves(&piece));
+                });
             },
             'p' => { println!("{}", b); continue },
             'e' => break,
