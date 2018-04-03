@@ -194,7 +194,7 @@ impl fmt::Display for GameState {
         let mut board_rep = String::new();
         for row in 0..self.rows {
             for col in  0..self.cols {
-                let curr_piece = &self.grid[row][col];
+                let curr_piece = self.grid[row][col];
                 match curr_piece {
                     Some(piece) => board_rep.push_str(&format!("{}", piece)),
                     None => board_rep.push_str(" ")
