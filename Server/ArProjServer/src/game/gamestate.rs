@@ -25,6 +25,7 @@ impl GameState {
         let piece = self.grid[from_row][from_col];
         match piece {
             Some(mut piece) => {
+    
                 let moves = self.possible_moves(&piece);
                 let move_coord = Coord { row:to_row, col:to_col };
 
@@ -52,6 +53,28 @@ impl GameState {
                         // TODO: handle promotion properly
                         // for the moment, just promote to queen
                         piece.piece_type = PieceType::Queen;
+                    }
+
+                    if piece.piece_type == PieceType::King{
+                        if (from_col as isize - to_col as isize).abs() == 2{
+                            if to_col == 2{
+                                let mut rook = self.grid[from_row][0];
+                                rook.map(|mut rook|{
+                                    rook.col = 3;
+                                    self.grid[to_row][3] = Some(rook);
+                                    self.grid[to_row][0] = None;
+                                });
+                            }
+
+                            else if to_col ==  6{
+                                let mut rook = self.grid[from_row][7];
+                                rook.map(|mut rook|{
+                                    rook.col = 5;
+                                    self.grid[to_row][5] = Some(rook);
+                                    self.grid[to_row][7] = None;
+                                });
+                            }
+                        }
                     }
                     
                     self.last_move = (Some(piece), Some(Coord { row: from_row, col: from_col }));
