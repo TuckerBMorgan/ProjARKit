@@ -8,6 +8,26 @@ use game::piece::Coord;
 pub fn possible_king_moves(game_state: &GameState, piece: &Piece) -> HashSet<Coord> {
     let mut moves = HashSet::new();
 
+    if !piece.has_moved{
+        let rook1 = game_state.grid[piece.row][0];
+        let rook2 = game_state.grid[piece.row][7];
+
+        rook1.map(|rook1|{
+            if !rook1.has_moved{
+                if game_state.grid[piece.row][1].is_none() && game_state.grid[piece.row][2].is_none() && game_state.grid[piece.row][3].is_none(){
+                    game_state.insert_if_valid(piece, piece.row, 2, &mut moves);
+                    }
+            }
+        });
+
+        rook2.map(|rook2| {
+            if !rook2.has_moved{
+                if game_state.grid[piece.row][5].is_none() && game_state.grid[piece.row][6].is_none(){
+                    game_state.insert_if_valid(piece, piece.row, 6, &mut moves);
+                }
+            }
+        });
+    }
     if piece.row > 0 {
         // up
         let row = piece.row - 1;
