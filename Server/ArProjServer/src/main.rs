@@ -5,6 +5,8 @@ fn main() {
     let mut game_state = GameState{..Default::default()};
     
     println!("{}", game_state);
+    println!("<<{:?}'s Turn>>", game_state.turn);
+
     /*game_state.move_piece(6, 4, 4, 4);
     println!("{}", game_state);
     let piece = game_state.grid[7][4].unwrap();
@@ -44,6 +46,9 @@ fn main() {
                 if !piece.is_none() {
                     println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
                     game_state.move_piece(row1, col1, row2, col2);
+                    println!("-------");
+                    println!("<<{:?}'s Turn>>", game_state.turn);
+                    println!("{}", game_state);
                 }
             },
             's' => {

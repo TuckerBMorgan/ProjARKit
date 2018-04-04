@@ -17,7 +17,8 @@ pub struct GameState {
     pub grid: [[Option<Piece>; 8]; 8],
     pub rows: usize,
     pub cols: usize,
-    pub last_move: (Option<Piece>, Option<Coord>)
+    pub last_move: (Option<Piece>, Option<Coord>),
+    pub turn: Color
 }
 
 impl GameState {
@@ -79,7 +80,11 @@ impl GameState {
                     
                     self.last_move = (Some(piece), Some(Coord { row: from_row, col: from_col }));
                     self.grid[to_row][to_col] = Some(piece); 
-                    self.grid[from_row][from_col] = None
+                    self.grid[from_row][from_col] = None;
+                    match self.turn {
+                        Color::White => self.turn = Color::Black,
+                        _ => self.turn = Color::White
+                    };
                 } else {
                     println!("[Error] Attempt to move piece to invalid square")
                 }
@@ -207,7 +212,8 @@ impl Default for GameState {
             ],
             rows: 8,
             cols: 8,
-            last_move: (None, None)
+            last_move: (None, None),
+            turn: Color::White
         }
     }
 }
@@ -215,12 +221,16 @@ impl Default for GameState {
 impl fmt::Display for GameState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut board_rep = String::new();
+        board_rep.push_str("  ");
+        for col in 0..self.cols { board_rep.push_str(&format!("{} ", col)); }
+        board_rep.push_str("\n");
         for row in 0..self.rows {
+            board_rep.push_str(&format!("{} ", row));
             for col in  0..self.cols {
                 let curr_piece = self.grid[row][col];
                 match curr_piece {
-                    Some(piece) => board_rep.push_str(&format!("{}", piece)),
-                    None => board_rep.push_str(" ")
+                    Some(piece) => board_rep.push_str(&format!("{} ", piece)),
+                    None => board_rep.push_str("⚬ ")
                 }
             }
             board_rep.push('\n');
