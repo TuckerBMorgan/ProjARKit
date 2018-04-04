@@ -18,10 +18,24 @@ pub struct GameState {
     pub rows: usize,
     pub cols: usize,
     pub last_move: (Option<Piece>, Option<Coord>),
-    pub turn: Color
+    pub turn: Color,
+    pub king_checked: bool
 }
 
 impl GameState {
+    #[allow(dead_code)]
+    pub fn piece_list(&mut self) -> HashSet<Option<Piece>>{
+        let mut pl = HashSet::new();
+
+        for row in 0..self.rows {
+            for col in 0..self.cols {
+                self.grid[row][col].map(|piece| pl.insert(Some(piece)));
+            }
+        }
+
+        return pl;
+    }
+
     pub fn move_piece(&mut self, from_row: usize, from_col: usize, to_row: usize, to_col: usize) {
         let piece = self.grid[from_row][from_col];
         match piece {
@@ -112,38 +126,45 @@ impl GameState {
     }
 
     pub fn print_moves(&self, moves: &HashSet<Coord>) {
-       let mut output = String::new();
+        let mut output = String::new();
 
-       for row in 0..8 {
-           for col in 0..8 {
-               let coord = Coord { row, col };
-               output.push_str(&format!("{} ", 
-                    if moves.contains(&coord) {
-                        "1"
-                    } else {
-                        "0"
-                    }));
-           }
-           output.push('\n');
-       }
-       for coord in moves.iter() {
-           output.push_str(&format!("({}, {}), ", coord.row, coord.col));
-       }
-       output.pop();
-       output.pop();
+        output.push_str("  ");
+        for col in 0..self.cols { output.push_str(&format!("{} ", col)); }
+        output.push_str("\n");
+        for row in 0..self.rows {
+            output.push_str(&format!("{} ", row));
+            for col in 0..self.cols {
+                let coord = Coord { row, col };
+                if moves.contains(&coord) {
+                    output.push_str("✗ ");
+                } else {
+                    match self.grid[row][col] {
+                        Some(piece) => output.push_str(&format!("{} ", piece)),
+                        None => output.push_str("⚬ ")
+                    }
+                }
+            }
+            output.push('\n');
+        }
+        for coord in moves.iter() {
+            output.push_str(&format!("({}, {}), ", coord.row, coord.col));
+        }
+        output.pop();
+        output.pop();
 
-       println!("{}", output);
+        println!("{}", output);
     }
    
     pub fn possible_moves(&self, piece: &Piece) -> HashSet<Coord> {
-        match piece.piece_type {
+        let moves = match piece.piece_type {
             PieceType::Knight =>    possible_knight_moves(&self, piece),
             PieceType::Bishop =>    possible_bishop_moves(&self, piece),
             PieceType::Queen =>     possible_queen_moves(&self, piece),
             PieceType::Pawn =>      possible_pawn_moves(&self, piece),
             PieceType::Rook =>      possible_rook_moves(&self, piece),
             PieceType::King =>      possible_king_moves(&self, piece),
-        }
+        };
+        moves
     }
 
     pub fn insert_if_valid(&self, piece: &Piece, row: usize, col: usize, moves: &mut HashSet<Coord>) {
@@ -213,7 +234,8 @@ impl Default for GameState {
             rows: 8,
             cols: 8,
             last_move: (None, None),
-            turn: Color::White
+            turn: Color::White,
+            king_checked: false
         }
     }
 }

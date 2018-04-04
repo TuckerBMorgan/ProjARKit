@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(PartialEq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone)]
 pub enum PieceType {
     Pawn,
     King,
@@ -10,7 +10,7 @@ pub enum PieceType {
     Knight,
 }
 
-#[derive(PartialEq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone)]
 pub enum Color {
     White,
     Black
@@ -22,7 +22,7 @@ pub struct Coord {
     pub col: usize
 }
 
-#[derive(PartialEq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone)]
 pub struct Piece {
     pub piece_type: PieceType,
     pub has_moved: bool,

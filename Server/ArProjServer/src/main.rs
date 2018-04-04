@@ -72,6 +72,7 @@ fn main() {
                    game_state.print_moves(&game_state.possible_moves(&piece));
                 });
             },
+            'c' => { println!("King in check: {}", game_state.king_checked); continue },
             'p' => { println!("{}", game_state); continue },
             'e' => break,
             _ => { println!("m -> Move\ns -> Show Moves\np -> Print board\ne -> exit"); continue }
