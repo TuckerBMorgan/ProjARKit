@@ -47,13 +47,18 @@ fn main() {
                                             Ok(row2) => {
                                                 match vals[3].parse::<usize>() {
                                                     Ok(col2) => {
-                                                        let piece = game_state.grid[row1][col1];
-
-                                                        if !piece.is_none() {
-                                                            println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
-                                                            game_state.move_piece(row1, col1, row2, col2);
-                                                            println!("<<{:?}'s Turn>>", game_state.turn);
-                                                            println!("{}", game_state);
+                                                        match game_state.grid[row1][col1] {
+                                                            Some(piece) => {
+                                                                if piece.color == game_state.turn {
+                                                                    println!("Trying to move ({}, {}) to ({}, {}):", vals[0], vals[1], vals[2], vals[3]);
+                                                                    game_state.move_piece(row1, col1, row2, col2);
+                                                                    println!("<<{:?}'s Turn>>", game_state.turn);
+                                                                    println!("{}", game_state);
+                                                                } else {
+                                                                    println!("[Error] Trying to move {:?} piece on {:?}'s turn.", piece.color, game_state.turn);
+                                                                }
+                                                            },
+                                                            None => println!("[Error] No piece at ({}, {})", row1, col1)
                                                         }
                                                     },
                                                     Err(e) => println!("[Error] {}: {}", e, vals[3])
@@ -104,7 +109,13 @@ fn main() {
                             Err(e) => println!("{}: {}", e, vals[0])
                         }
                     },
-                    'c' => { println!("King in check: {}", game_state.king_checked); continue },
+                    'g' => {
+                        if game_state.no_available_moves(game_state.turn) {
+                            println!("{:?} has been checkmated! gg", game_state.turn);
+                            break
+                        }
+                        continue 
+                    },
                     'p' => { 
                         println!("<<{:?}'s Turn>>", game_state.turn);
                         println!("{}", game_state); 

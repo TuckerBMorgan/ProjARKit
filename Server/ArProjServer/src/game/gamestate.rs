@@ -20,13 +20,12 @@ pub struct GameState {
     pub cols: usize,
     pub last_move: (Option<Piece>, Option<Coord>),
     pub turn: Color,
-    pub king_checked: bool,
     pub checking_state: bool
 }
 
 impl GameState {
     #[allow(dead_code)]
-    pub fn piece_list(&mut self) -> HashSet<Piece>{
+    pub fn piece_list(&self) -> HashSet<Piece>{
         let mut pl = HashSet::new();
 
         for row in 0..self.rows {
@@ -123,15 +122,13 @@ impl GameState {
         }
 
         if !self.checking_state { 
-            if piece.piece_type != PieceType::King {
-                let mut game_state_copy = *self;
-                game_state_copy.checking_state = true;
-                game_state_copy.move_piece(piece.row, piece.col, row, col);
-                for other_piece in game_state_copy.piece_list() {
-                    if other_piece.color == piece.color && other_piece.piece_type == PieceType::King {
-                        if in_check(game_state_copy, Coord { row: other_piece.row, col: other_piece.col }, other_piece) {
-                            return false;
-                        }
+            let mut game_state_copy = *self;
+            game_state_copy.checking_state = true;
+            game_state_copy.move_piece(piece.row, piece.col, row, col);
+            for other_piece in game_state_copy.piece_list() {
+                if other_piece.color == piece.color && other_piece.piece_type == PieceType::King {
+                    if in_check(game_state_copy, Coord { row: other_piece.row, col: other_piece.col }, other_piece) {
+                        return false;
                     }
                 }
             }
@@ -192,13 +189,25 @@ impl GameState {
             moves.insert(Coord { row, col });
         }
     }
+
+    pub fn no_available_moves(&self, color: Color) -> bool {
+        for piece in self.piece_list().iter() {
+            if piece.color == color {
+                if !self.possible_moves(*piece).is_empty() {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
 
 impl Default for GameState {
     fn default() -> GameState {
         GameState {
             grid: [
-                [
+                [ // Rc::new((Some(piece))
                     Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 0, color: Color::Black}), 
                     Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 1, color: Color::Black}),
                     Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 2, color: Color::Black}),
@@ -255,7 +264,6 @@ impl Default for GameState {
             cols: 8,
             last_move: (None, None),
             turn: Color::White,
-            king_checked: false,
             checking_state: false
         }
     }
