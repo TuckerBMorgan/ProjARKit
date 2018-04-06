@@ -5,7 +5,7 @@ use game::piece::Piece;
 use game::piece::Color;
 use game::piece::Coord;
 
-pub fn possible_pawn_moves(game_state: &GameState, piece: &Piece) -> HashSet<Coord> {
+pub fn possible_pawn_moves(game_state: &GameState, piece: Piece) -> HashSet<Coord> {
     let mut moves = HashSet::new();
 
     let mut row = piece.row;

@@ -4,7 +4,7 @@ use game::gamestate::GameState;
 use game::piece::Piece;
 use game::piece::Coord;
 
-pub fn possible_knight_moves(game_state: &GameState, piece: &Piece) -> HashSet<Coord> {
+pub fn possible_knight_moves(game_state: &GameState, piece: Piece) -> HashSet<Coord> {
     let mut moves = HashSet::new();
 
     // top top left

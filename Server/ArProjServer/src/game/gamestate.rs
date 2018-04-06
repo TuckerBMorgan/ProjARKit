@@ -13,23 +13,25 @@ use game::bishop::possible_bishop_moves;
 use game::knight::possible_knight_moves;
 use game::queen::possible_queen_moves;
 
+#[derive(Copy, Clone)]
 pub struct GameState {
     pub grid: [[Option<Piece>; 8]; 8],
     pub rows: usize,
     pub cols: usize,
     pub last_move: (Option<Piece>, Option<Coord>),
     pub turn: Color,
-    pub king_checked: bool
+    pub king_checked: bool,
+    pub checking_state: bool
 }
 
 impl GameState {
     #[allow(dead_code)]
-    pub fn piece_list(&mut self) -> HashSet<Option<Piece>>{
+    pub fn piece_list(&mut self) -> HashSet<Piece>{
         let mut pl = HashSet::new();
 
         for row in 0..self.rows {
             for col in 0..self.cols {
-                self.grid[row][col].map(|piece| pl.insert(Some(piece)));
+                self.grid[row][col].map(|piece| pl.insert(piece));
             }
         }
 
@@ -41,7 +43,7 @@ impl GameState {
         match piece {
             Some(mut piece) => {
     
-                let moves = self.possible_moves(&piece);
+                let moves = self.possible_moves(piece);
                 let move_coord = Coord { row:to_row, col:to_col };
 
                 // if the chosen move is in the generated possible moves
@@ -100,7 +102,9 @@ impl GameState {
                         _ => self.turn = Color::White
                     };
                 } else {
-                    println!("[Error] Attempt to move piece to invalid square")
+                    if !self.checking_state {
+                        println!("[Error] Attempt to move piece to invalid square")
+                    }
                 }
             },
             None => println!("[Error] Attempt to move an invalid piece")
@@ -111,11 +115,26 @@ impl GameState {
         row < self.rows && col < self.cols
     }
 
-    pub fn valid_move(&self, piece: &Piece, row: usize, col: usize) -> bool {
+    pub fn valid_move(&self, piece: Piece, row: usize, col: usize) -> bool {
         if !self.in_bounds(row, col) {
             return false;
-        } else if piece.piece_type == PieceType::King && in_check(&self, Coord {row, col}, piece) {
+        } else if piece.piece_type == PieceType::King && in_check(*self, Coord {row, col}, piece) {
             return false;
+        }
+
+        if !self.checking_state { 
+            if piece.piece_type != PieceType::King {
+                let mut game_state_copy = *self;
+                game_state_copy.checking_state = true;
+                game_state_copy.move_piece(piece.row, piece.col, row, col);
+                for other_piece in game_state_copy.piece_list() {
+                    if other_piece.color == piece.color && other_piece.piece_type == PieceType::King {
+                        if in_check(game_state_copy, Coord { row: other_piece.row, col: other_piece.col }, other_piece) {
+                            return false;
+                        }
+                    }
+                }
+            }
         }
 
         let target_piece = self.grid[row][col];
@@ -155,7 +174,7 @@ impl GameState {
         println!("{}", output);
     }
    
-    pub fn possible_moves(&self, piece: &Piece) -> HashSet<Coord> {
+    pub fn possible_moves(&self, piece: Piece) -> HashSet<Coord> {
         let moves = match piece.piece_type {
             PieceType::Knight =>    possible_knight_moves(&self, piece),
             PieceType::Bishop =>    possible_bishop_moves(&self, piece),
@@ -164,10 +183,13 @@ impl GameState {
             PieceType::Rook =>      possible_rook_moves(&self, piece),
             PieceType::King =>      possible_king_moves(&self, piece),
         };
+
+        // handle other checks here?
+
         moves
     }
 
-    pub fn insert_if_valid(&self, piece: &Piece, row: usize, col: usize, moves: &mut HashSet<Coord>) {
+    pub fn insert_if_valid(&self, piece: Piece, row: usize, col: usize, moves: &mut HashSet<Coord>) {
         if self.valid_move(piece, row, col) {
             moves.insert(Coord { row, col });
         }
@@ -235,7 +257,8 @@ impl Default for GameState {
             cols: 8,
             last_move: (None, None),
             turn: Color::White,
-            king_checked: false
+            king_checked: false,
+            checking_state: false
         }
     }
 }

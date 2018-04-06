@@ -5,7 +5,7 @@ use game::piece::Piece;
 use game::piece::PieceType;
 use game::piece::Coord;
 
-pub fn possible_king_moves(game_state: &GameState, piece: &Piece) -> HashSet<Coord> {
+pub fn possible_king_moves(game_state: &GameState, piece: Piece) -> HashSet<Coord> {
     let mut moves = HashSet::new();
 
     if !piece.has_moved{
@@ -81,14 +81,14 @@ pub fn possible_king_moves(game_state: &GameState, piece: &Piece) -> HashSet<Coo
     return moves;
 }
 
-pub fn in_check(game_state: &GameState, pos: Coord, piece: &Piece) -> bool {
+pub fn in_check(game_state: GameState, pos: Coord, piece: Piece) -> bool {
     for row in 0..game_state.rows {
         for col in 0..game_state.cols {
             let curr_piece = game_state.grid[row][col];
             let check = match curr_piece {
                 Some(curr_piece) => {
                     if curr_piece.color != piece.color && curr_piece.piece_type != PieceType::King {
-                        game_state.possible_moves(&curr_piece).contains(&pos)
+                        game_state.possible_moves(curr_piece).contains(&pos)
                     } else {
                         false
                     }

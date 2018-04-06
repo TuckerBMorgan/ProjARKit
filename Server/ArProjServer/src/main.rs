@@ -4,14 +4,12 @@ use game::gamestate::GameState;
 fn main() {
     let mut game_state = GameState{..Default::default()};
     
-    println!("{}", game_state);
+    /* println!("{}", game_state);
     println!("<<{:?}'s Turn>>", game_state.turn);
 
-    /*game_state.move_piece(6, 4, 4, 4);
+    game_state.move_piece(6, 4, 4, 4);
     println!("{}", game_state);
-    let piece = game_state.grid[7][4].unwrap();
-    game_state.print_moves(&game_state.possible_moves(&piece));
-    */
+ */    
 
     // loop for input
     use std::io::{stdin};
@@ -69,7 +67,7 @@ fn main() {
 
                 game_state.grid[row][col].map(|piece| {
                    println!("Generating possible moves for ({}, {})", row, col);
-                   game_state.print_moves(&game_state.possible_moves(&piece));
+                   game_state.print_moves(&game_state.possible_moves(piece));
                 });
             },
             'c' => { println!("King in check: {}", game_state.king_checked); continue },
