@@ -73,3 +73,9 @@ Client/AR Chess/AR Chess.xcodeproj/project.xcworkspace/xcuserdata/Alex.xcuserdat
 Client/AR Chess/Pods
 
 Client/AR Chess/Podfile.lock
+
+# Rust ignore
+Server/ArProjServer/target/
+Cargo.lock
+**/*.rs.bk
+Server/ArProjServer/.vscode/launch.json
