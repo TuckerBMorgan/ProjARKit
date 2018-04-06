@@ -144,7 +144,7 @@ impl GameState {
         }
     }
 
-    pub fn print_moves(&self, moves: &HashSet<Coord>) {
+    pub fn print_moves(&self, moves: HashSet<Coord>) {
         let mut output = String::new();
 
         output.push_str("  ");
@@ -183,8 +183,6 @@ impl GameState {
             PieceType::Rook =>      possible_rook_moves(&self, piece),
             PieceType::King =>      possible_king_moves(&self, piece),
         };
-
-        // handle other checks here?
 
         moves
     }
