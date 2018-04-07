@@ -24,6 +24,70 @@ pub struct GameState {
 }
 
 impl GameState {
+    pub fn new() -> GameState {
+        GameState {
+            grid: [
+                [ // Rc::new((Some(piece))
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 0, color: Color::Black}), 
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 1, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 2, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Queen, has_moved: false, row: 0, col: 3, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::King, has_moved: false, row: 0, col: 4, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 5, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 6, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 7, color: Color::Black})
+                ],
+                [
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 0, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 1, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 2, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 3, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 4, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 5, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 6, color: Color::Black}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 7, color: Color::Black}),
+                ],
+                [
+                    None, None, None, None, None, None, None, None
+                ],
+                [
+                    None, None, None, None, None, None, None, None
+                ],
+                [
+                    None, None, None, None, None, None, None, None
+                ],
+                [
+                    None, None, None, None, None, None, None, None
+                ],
+                [
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 0, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 1, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 2, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 3, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 4, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 5, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 6, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 7, color: Color::White}),
+                ],
+                [
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 7, col: 0, color: Color::White}), 
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 7, col: 1, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 7, col: 2, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Queen, has_moved: false, row: 7, col: 3, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::King, has_moved: false, row: 7, col: 4, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 7, col: 5, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 7, col: 6, color: Color::White}),
+                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 7, col: 7, color: Color::White})
+                ],
+            ],
+            rows: 8,
+            cols: 8,
+            last_move: (None, None),
+            turn: Color::White,
+            checking_state: false
+        }
+    }
+
     #[allow(dead_code)]
     pub fn piece_list(&self) -> HashSet<Piece>{
         let mut pl = HashSet::new();
@@ -200,72 +264,6 @@ impl GameState {
         }
 
         return true;
-    }
-}
-
-impl Default for GameState {
-    fn default() -> GameState {
-        GameState {
-            grid: [
-                [ // Rc::new((Some(piece))
-                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 0, color: Color::Black}), 
-                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 1, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 2, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Queen, has_moved: false, row: 0, col: 3, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::King, has_moved: false, row: 0, col: 4, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 0, col: 5, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 0, col: 6, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 0, col: 7, color: Color::Black})
-                ],
-                [
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 0, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 1, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 2, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 3, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 4, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 5, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 6, color: Color::Black}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 1, col: 7, color: Color::Black}),
-                ],
-                [
-                    None, None, None, None, None, None, None, None
-                ],
-                [
-                    None, None, None, None, None, None, None, None
-                ],
-                [
-                    None, None, None, None, None, None, None, None
-                ],
-                [
-                    None, None, None, None, None, None, None, None
-                ],
-                [
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 0, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 1, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 2, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 3, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 4, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 5, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 6, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Pawn, has_moved: false, row: 6, col: 7, color: Color::White}),
-                ],
-                [
-                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 7, col: 0, color: Color::White}), 
-                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 7, col: 1, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 7, col: 2, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Queen, has_moved: false, row: 7, col: 3, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::King, has_moved: false, row: 7, col: 4, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Bishop, has_moved: false, row: 7, col: 5, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Knight, has_moved: false, row: 7, col: 6, color: Color::White}),
-                    Some(Piece { piece_type: PieceType::Rook, has_moved: false, row: 7, col: 7, color: Color::White})
-                ],
-            ],
-            rows: 8,
-            cols: 8,
-            last_move: (None, None),
-            turn: Color::White,
-            checking_state: false
-        }
     }
 }
 

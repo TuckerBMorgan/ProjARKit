@@ -2,7 +2,7 @@ mod game;
 use game::gamestate::GameState;
 
 fn main() {
-    let mut game_state = GameState{..Default::default()};
+    let mut game_state = GameState::new();
    
     // loop for input
     use std::io::{stdin};
